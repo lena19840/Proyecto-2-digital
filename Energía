@@ -1,7 +1,7 @@
 //***************************************************************************************************************************************
 //  LIBRERIAS
 //***************************************************************************************************************************************
-#include <SPI.h>//librerias
+#include <SPI.h>
 #include <SD.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,38 +26,39 @@
 
 #include "pitches.h"
 
-#define LCD_RST PD_0
+#define LCD_RST PD_0 //PINES DE LA TFT 
 #define LCD_CS PD_1
 #define LCD_RS PD_2
 #define LCD_WR PD_3
 #define LCD_RD PE_1
 int DPINS[] = {PB_0, PB_1, PB_2, PB_3, PB_4, PB_5, PB_6, PB_7};
 
-#define NOTE_C4_1 260
+#define NOTE_C4_1 260 //NOTAS
 
-#define SW1 PF_4
-#define SW2 PF_0
+#define Bt1 PF_4 //BOTONES 
+#define Bt2 PF_0
 
-int buzzerPin = PC_7;
+int buzzerPin = PC_7; //BUZZER
 
-// notes in the melody:
+// MELODÍA:
+//NOTAS
 int melody[] = {
-  NOTE_C4, NOTE_G3, NOTE_G3, NOTE_A3, NOTE_G3, 0, NOTE_B3, NOTE_C4
+  NOTE_B0, NOTE_C1, NOTE_CS1, NOTE_D1, NOTE_DS1, 0, NOTE_E1, NOTE_F1
 };
 
-// note durations: 4 = quarter note, 8 = eighth note, etc.:
+// DURACIÓN DE NOTA
 int noteDurations[] = {
-  4, 8, 8, 4, 4, 4, 4, 4
+  8, 8, 8, 8, 8, 4, 4, 4
 };
 
-// notes in the melody:
+//NOTAS
 int melody2[] = {
-  NOTE_B5, NOTE_G5, NOTE_A5, NOTE_E1, NOTE_B5, NOTE_G5, NOTE_A5,
+  NOTE_DS2, NOTE_E2, NOTE_F2, NOTE_E1, NOTE_G2, NOTE_A2, NOTE_C3,
 };
 
-// note durations: 4 = quarter note, 8 = eighth note, etc.:
+// DURACIÓN DE NOTA
 int noteDurations2[] = {
-  2, 2, 1, 2, 2, 2, 1,
+  8, 8, 4, 8, 2, 2, 1,
 };
 
 //***************************************************************************************************************************************
@@ -87,7 +88,7 @@ unsigned char rebote1;
 unsigned char rebote2;
 
 unsigned char Entrada = 0;
-unsigned char EnvioData;
+unsigned char EData;
 int Detector;
 String Temporal;
 
@@ -100,14 +101,14 @@ unsigned long pasado;
 void setup() {
   SysCtlClockSet(SYSCTL_SYSDIV_2_5 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ); //instrucción driverliv, configuración del reloj
   SPI.setModule(0);
-  Serial.begin(115200);
+  Serial.begin(115200); //COMUNICACIÓN SERIAL
   Serial2.begin(115200);
   GPIOPadConfigSet(GPIO_PORTB_BASE, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD_WPU);//pinesa a utilizar
   //Serial.println("Start");
   LCD_Init(); //inicio de lcd
   LCD_Clear(0x00); //limpiar
-  SetWindows(0, 0, 319, 239);
-  LCD_Bitmap(0, 0, 309, 239, obstaculo);
+  SetWindows(0, 0, 319, 239); //MEDIDAS DE LA PANTALLA
+  LCD_Bitmap(0, 0, 309, 239, obstaculo); //MEDIDAS DE LA IMAGEN
   delay(2000);
   LCD_Clear(0x00);
   pinMode(PF_4, INPUT_PULLUP);
@@ -126,12 +127,12 @@ void setup() {
 // Loop
 //***************************************************************************************************************************************
 void loop() {
-  if (digitalRead(PF_0) == LOW) {
+  if (digitalRead(PF_0) == LOW) { //BOTÓN PARA PODER GUARDAR LA INFORMACIÓN EN LA SD
     //Serial.println("se oprimió botón");
     rebote1 = 1;
   } else if (digitalRead(PF_0) == HIGH && rebote1 == 1 ) {
     //Serial.println("se soltó botón");
-    myFile = SD.open("dateDet.txt", FILE_WRITE);
+    myFile = SD.open("dateDet.txt", FILE_WRITE); //NOMBRE DE LA CARPETA DONDE SE ESTARAN GUARDANDO LOS DATOS TOMADOS
     if (myFile) {
 
       myFile.print("Lectura de proximidad: ");
@@ -144,7 +145,7 @@ void loop() {
 
     }
 
-    /*for (int thisNote = 0; thisNote < 26; thisNote++) {
+    for (int thisNote = 0; thisNote < 26; thisNote++) { //CALCULO DEL TONO 
 
       // to calculate the note duration, take one second
       // divided by the note type.
@@ -156,22 +157,22 @@ void loop() {
       delay(pauseBetweenNotes);
 
       noTone(buzzerPin);                // stop the tone playing
-    }*/
+    }
 
     rebote1 = 0;
   }
 
-  if (digitalRead(PF_4) == LOW) {
+  if (digitalRead(PF_4) == LOW) { //BOTÓN PARA PODER TOMAR LOS DATOS DEL SENSOR 
     rebote2 = 1;
   } else if (digitalRead(PF_4) == HIGH && rebote2 == 1 ) {
     Serial2.println('P');
-    EnvioData = 1;
+    EData = 1;
 
 
     rebote2 = 0;
   }
 
-  if (EnvioData == 1) {
+  if (EData == 1) {
     if (Serial2.available() > 0) {
       Entrada = Serial2.read();
 
@@ -183,9 +184,9 @@ void loop() {
       Detector = Temporal.toInt();
       Serial.println(Temporal);
       Entrada = 0;
-      EnvioData = 0;
+      EData = 0;
 
-      /*for (int thisNote = 0; thisNote < 26; thisNote++) {
+      for (int thisNote = 0; thisNote < 26; thisNote++) { //CALCULO DE TONO
 
         // to calculate the note duration, take one second
         // divided by the note type.
@@ -197,12 +198,12 @@ void loop() {
         delay(pauseBetweenNotes);
 
         noTone(buzzerPin);                // stop the tone playing
-      }*/
+      }
     }
   }
   //void LCD_Print(String text, int x, int y, int fontSize, int color, int background); // texto
 
-  if (millis() >= pasado + intervalo) { // imprimir en la lcd
+  if (millis() >= pasado + intervalo) { // IMPRESIÓN EN LOS DATOS LCD
     intervalo = millis();
     SetWindows(0, 0, 319, 239);
     LCD_Print("DetObs", 50, 50, 2, 0xffff, 0x0000);
